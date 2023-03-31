@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <link
+         href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+         rel="stylesheet"
+         />
+      <link
+         href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css"
+         rel="stylesheet"
+         />
+      <link
+         href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"
+         rel="stylesheet"
+         />
+      <script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
+      <link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet' />
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+      <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+      <script src="https://cdn.amcharts.com/lib/4/themes/material.js"></script>
+      <script src="https://cdn.amcharts.com/lib/4/lang/de_DE.js"></script>
+      <script src="https://cdn.amcharts.com/lib/4/geodata/germanyLow.js"></script>
+      <script src="https://cdn.amcharts.com/lib/4/fonts/notosans-sc.js"></script>
+      <meta
+         name="viewport"
+         content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui"
+         />
+      <meta charset="utf-8" />
+   </head>
+   <body>
+      <div id="app">
+         <v-app>
+            <v-main>
+               <div class="minPadding">
+                  <div class="card">
+                     <p>
+                        Choisissez vos types de restaurants préférés et partez à l'aventure 🚴💨
+                     </p>
+                     <v-text-field
+                        v-model="length"
+                        label="Distance"
+                        outlined
+                        dense
+                        suffix="m"
+                        ></v-text-field>
+                     <v-text-field
+                        v-model="numberOfStops"
+                        label="Nombre d'arrêts maximums"
+                        outlined
+                        dense
+                        append-icon="mdi-home-group"
+                        ></v-text-field>
+                     <v-select
+                        v-model="selected"
+                        :items="typeRestau"
+                        label="Type de restaurant"
+                        multiple
+                        chips
+                        persistent-hint
+                        ></v-select>
+                     <v-card-actions class="justify-center">
+                     <v-btn elevation="2" @click="getStarting"
+                        >Rechercher un parcours</v-btn>
+                     <v-card-actions>
+                  </div>
+                  <div class="card">
+                     <div id='map' style='width: auto; height: 400px;margin:auto;border-radius: 10px;'></div>
+                  </div>
+                  <div v-if="parcoursExist" >
+                     <div class="card">
+                       <v-card-title>Restaurants visités et bilan énergétique</v-card-title>
+                        <v-list-item v-for="restaurant in parcours.features" :key="restaurant.properties.id" two-line class="listings"
+                           @click="showRestau(restaurant)">
+                           <v-list-item-content 
+                           v-if="restaurant.geometry.type=='Point'"
+                           class="text-right "
+                           >
+                              <v-list-item-title>{{restaurant.properties.name}}</v-list-item-title>
+                              <div v-if="showCal">
+                                 <v-list-item-subtitle style="color:rgba(255, 99, 132);" v-if="restaurant.properties.type=='burger'">🍔  {{restaurant.properties.type}} : + {{info.calories_type[restaurant.properties.type]}} calories</v-list-item-subtitle>
+                                 <v-list-item-subtitle style="color:rgba(255, 99, 132);" v-if="restaurant.properties.type=='pizza'">🍕  {{restaurant.properties.type}} : + {{info.calories_type[restaurant.properties.type]}} calories</v-list-item-subtitle>
+                                 <v-list-item-subtitle style="color:rgba(255, 99, 132);" v-if="restaurant.properties.type=='classic'">🍴 {{restaurant.properties.type}} : + {{info.calories_type[restaurant.properties.type]}} calories</v-list-item-subtitle>
+                                 <v-list-item-subtitle style="color:rgba(255, 99, 132);" v-if="restaurant.properties.type=='sandwich'">🥪 {{restaurant.properties.type}} : + {{info.calories_type[restaurant.properties.type]}} calories</v-list-item-subtitle>
+                                 <v-list-item-subtitle style="color:rgba(255, 99, 132);" v-if="restaurant.properties.type=='cafe'">☕ {{restaurant.properties.type}} : + {{info.calories_type[restaurant.properties.type]}} calories</v-list-item-subtitle>
+                              </div>
+                           </v-list-item-content>
+                           <div v-else>
+                           <div v-if="showCal">
+                           <v-list-item-content 
+                            >
+                            <v-list-item-title style="color:rgba(75, 192, 192, 0.8); ">Chemin à vélo  </v-list-item-title>
+                            
+                              <v-list-item-subtitle style="color:rgba(75, 192, 192, 0.8);">🚴 {{parseInt(restaurant.properties.length)}} m : - {{parseInt(restaurant.properties.length * info.calories_km/1000)}} calories</v-list-item-subtitle>
+                            </div>
+                            </div>
+                         </v-list-item-content>
+                         
+                        </v-list-item>
+                         <v-card-text
+                        >
+                        <v-list-item-title style="color:rgba(75, 192, 192, 0.8); ">Distance totale parcourue :</v-list-item-title>
+                        
+                          <v-list-item-subtitle style="color:rgba(75, 192, 192, 0.8);">🚴 {{distanceTot()}} m</v-list-item-subtitle>
+                        
+                     </v-card-text>
+                       
+
+                        <v-card-text>
+                           <div id="mychart" ></div>
+                        </v-card-text>
+                        <v-card-actions class="justify-center">
+                           <v-btn 
+                              block
+                              text
+                              elevation="2"
+                              @click="getChartdata()"
+                              >Afficher le bilan énergétique</v-btn>
+                        </v-card-actions>
+                     </div>
+                  </div>
+               </div>
+            </v-main>
+         </v-app>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+      <script>
+         new Vue({
+           el: "#app",
+           vuetify: new Vuetify({
+         theme:{
+                 themes: {
+                     dark: {
+                       primary: '#c9c9c9'
+                     }
+                 },
+                 dark: true
+             }
+         
+         }),
+           data: {
+             info: {
+         "calories_km": 40,
+         "calories_type": {
+           "classic": 500,
+           "cafe": 200,
+           "burger": 1200,
+           "pizza": 1200,
+           "sandwich": 400,
+           "sushi": 500,
+           "fast_food": 1200
+         }
+         },
+         showCal:false,
+         
+             selected: ["classic", "cafe", "burger"],
+             typeRestau: ["burger", "cafe", "classic", "sandwich", "pizza"],
+             parcours: undefined,
+             startingPoint: {"type":"Point","coordinates":[-71.2272035,46.8232789]},
+             length:20000,
+             numberOfStops:10,
+             parcoursExist: false,
+             startExist:false,
+             geojsonlayer: {
+               'id': 'layer1',
+               'source': 'parcours',
+               'type': 'line',
+               'layout': {
+               'line-join': 'round',
+               'line-cap': 'round'
+               },
+               'paint': {
+               'line-color': '#003399',
+               'line-width': 5
+               }
+               },
+             map:undefined
+           },
+           mounted(){
+             mapboxgl.accessToken = 'pk.eyJ1Ijoicm9tYWluY2giLCJhIjoiY2thejN4NzhoMDYycTJ3dGdoOWtzMnVndSJ9.xz409PPkqAD0WqYD569KsQ';
+             this.map = new mapboxgl.Map({
+               container: 'map', // container ID
+               style: 'mapbox://styles/mapbox/streets-v11', // style URL
+               center: [-71.232010, 46.820634], // starting position [lng, lat]
+               zoom: 9 // starting zoom
+               });
+
+               this.map.loadImage('marker',(error, image) => {
+                if (error) throw error;
+                // Add the image to the map style.
+                this.map.addImage('marker', image);
+               })
+           },
+           methods: {
+             getCalories(parcours){
+               const res = parcours.features.map(result => { return this.info.calories_type[result.properties.type] || -result.properties.length * this.info.calories_km/1000});
+               res.push(res.reduce((a,b)=>a+b))
+               return res
+             },
+             getNames(parcours){
+               return parcours.features.map(result => { return result.properties.name || 'Chemin à vélo'})
+             },
+             distanceTot(){
+                return parseInt(this.parcours.features.filter(result=> result.geometry.type!='Point').map(result => { return result.properties.length }).reduce((a,b)=>a+b))
+             },
+         getChartdata() {
+           const chartdata = {
+         type: "bar",
+         data: {
+         labels: [
+         ],
+         datasets: [
+           {
+             data: [],
+             borderWidth: 1
+           }
+          
+         ]
+         },
+         options: {
+         indexAxis: 'y',
+         responsive: true,
+         plugins: {
+          legend: { display: false },
+         title: {
+           display: true,
+           text: 'Votre résumé'
+         }
+         }
+         }
+         };
+             const ctx = document.getElementById("mychart");
+             ctx.innerHTML="";
+             const canvas = document.createElement("canvas");
+             ctx.appendChild(canvas);
+             chartdata.data.labels = this.getNames(this.parcours);
+             chartdata.data.labels.push('Bilan');
+             chartdata.data.datasets[0].data = this.getCalories(this.parcours);
+             chartdata.data.datasets[0].backgroundColor = this.getCalories(this.parcours).map(
+               result=>{
+                 if (result>=0) {
+                   return "rgba(255, 99, 132, 0.8)" 
+                  }
+                 else {
+                   return "rgba(75, 192, 192, 0.8)"
+                  }
+                }
+              );
+             new Chart(canvas, chartdata);
+             this.showCal=true
+             
+         },
+             createPopup(currentFeature){
+               const popUps = document.getElementsByClassName('mapboxgl-popup');
+               if (popUps[0]) popUps[0].remove();
+               const popup = new mapboxgl.Popup({ closeOnClick: false })
+                 .setLngLat(currentFeature.geometry.coordinates)
+                 .setHTML(
+                   `<h3>Restaurant</h3><h4>${currentFeature.properties.name}</h4>`
+                 )
+                 .addTo(this.map);
+             },
+             showRestau(feature){
+               if (feature.geometry.type=='Point'){
+               this.createPopup(feature);
+               }
+             },
+             addStart(){
+              const el = document.createElement('div');
+              el.className = 'marker';
+              const marker = new mapboxgl.Marker(el).setLngLat(this.startingPoint.coordinates).addTo(this.map);
+              this.marker=marker;
+             },
+             addMarkers() {
+              // Add markers to the map.
+              if (!this.parcoursExist){
+                
+               this.parcoursExist = true;
+               this.map.addSource('trajet', {
+               'type': 'geojson',
+               'data': {
+                 'type' : 'FeatureCollection',
+                 'features': this.parcours.features.filter(result=>result.geometry.type=="MultiLineString")
+               }
+             });
+                 
+                 this.map.addLayer({
+                 'id': 'trajet-layer',
+                 'type': 'line',
+                 'source': 'trajet',
+                 'layout': {
+                 'line-join': 'round',
+                 'line-cap': 'round'
+                 },
+                 'paint': {
+                 'line-color': '#006666',
+                 'line-width': 3
+                 }
+                 });
+
+                 this.map.addSource('restaurant', {
+               'type': 'geojson',
+               'data': {
+                 'type' : 'FeatureCollection',
+                 'features': this.parcours.features.filter(result=>result.geometry.type=="Point")
+               }
+             });
+                 
+                 this.map.addLayer({
+                 'id': 'restaurant-layer',
+                 'type': 'symbol',
+                 'source': 'restaurant',
+                  'layout': {'icon-image': 'marker'}
+                 });
+
+                 
+
+                }
+             },
+             updateStart(){
+              this.marker.setLngLat(this.startingPoint.coordinates)
+             },
+               updateParcours() {
+                const popUps = document.getElementsByClassName('mapboxgl-popup');
+               this.map.getSource('trajet').setData(
+                 {
+                 'type' : 'FeatureCollection',
+                 'features': this.parcours.features.filter(result=>result.geometry.type!="Point")
+               }
+               );
+               this.map.getSource('restaurant').setData(
+                 {
+                 'type' : 'FeatureCollection',
+                 'features': this.parcours.features.filter(result=>result.geometry.type=="Point")
+               }
+               );
+               },
+               getStarting(){
+                 var myHeaders = new Headers();
+                 myHeaders.append("Content-Type", "application/json");
+         
+                 var raw = JSON.stringify({
+                   length: this.length,
+                   type: this.selected
+                 });
+         
+                 var requestOptions = {
+                   method: 'POST',
+                   headers: myHeaders,
+                   body: raw,
+                   redirect: 'follow'
+                 };
+         
+                 fetch("http://localhost:80/starting_point", requestOptions)
+                 .then(response => response.json())
+                 .then(result => {
+                   this.startingPoint=result.startingPoint
+                   if (!this.startExist) this.addStart()
+                   else this.updateStart()
+                 })
+                 .then(this.getParcours())
+                 .catch(error => console.log('error', error));
+               },
+               getParcours() {
+                 var myHeaders = new Headers();
+                 myHeaders.append("Content-Type", "application/json");
+         
+                 var raw = JSON.stringify({
+                   startingPoint: this.startingPoint,
+                   length: parseFloat(this.length),
+                   numberOfStops: parseInt(this.numberOfStops),
+                   type: this.selected
+                 });
+                 var requestOptions = {
+                   method: 'POST',
+                   headers: myHeaders,
+                   body: raw,
+                   redirect: 'follow'
+                 };
+         
+                 fetch("http://localhost:80/parcours", requestOptions)
+                 .then(response => response.json())
+                 .then(result => {
+                   this.parcours=result;
+                   if (!this.parcoursExist) {this.addMarkers()}
+                   
+                   else 
+                   {
+                    this.updateParcours()
+                    this.getChartdata()}
+                    }
+                 )
+                 .catch(error => console.log('error', error));
+                 
+               },
+             }
+         });
+      </script>
+      <script></script>
+   </body>
+</html>
+<style>
+   #app {
+   background-image: linear-gradient( 109.6deg,  rgba(238,58,136,1) 11.2%, rgba(128,162,245,1) 91.1% );
+   }
+   .card {
+   margin: auto;
+   margin-top: 20px;
+   padding: 20px;
+   background: rgba(0, 0, 0, 0.72);
+   border-radius: 16px;
+   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+   backdrop-filter: blur(9.3px);
+   -webkit-backdrop-filter: blur(9.3px);
+   max-width: 700px;
+   }
+   .minPadding{
+   padding: 10px;
+   }
+   /* Marker tweaks */
+   .mapboxgl-popup {
+   padding-bottom: 50px;
+   }
+   .mapboxgl-popup-close-button {
+   display: none;
+   }
+   .mapboxgl-popup-content {
+   padding: 0;
+   width: 180px;
+   }
+   .mapboxgl-popup-content h3 {
+   background: #686868;
+   color: #fff;
+   margin: 0;
+   padding: 10px;
+   border-radius: 3px 3px 0 0;
+   font-weight: 700;
+   margin-top: -15px;
+   }
+   .mapboxgl-popup-content h4 {
+   margin: 0;
+   padding: 10px;
+   font-weight: 400;
+   background-color: #000000b8;
+   }
+   .mapboxgl-popup-content div {
+   padding: 2px;
+   }
+</style>

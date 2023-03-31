@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  web:
+    build: .
+    ports: 
+      - "80:80"
+    #volumes:
+      #- ./:/code
+
+  mongo:
+    image: mongo:4.2
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./volumes/mongodb:/data/db
+
+  neo4j:
+    image: neo4j:4.2
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ./volumes/neo4j:/data

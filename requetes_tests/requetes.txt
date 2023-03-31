@@ -1,0 +1,25 @@
+Calcul distance
+
+MATCH (p1:Point)-[r:Route]-(p2:Point)-[*2]-(p3)
+WITH point({longitude: p1.long, latitude: p1.lat}) AS p1Point, point({longitude: p3.long, latitude: p3.lat}) AS p2Point,p1,p2,p3
+where round(distance(p1Point, p2Point)) < 1000 and r.idOSM=628178353 return p1,p2,p3 limit 10
+
+//points et routes à 4 relation de ce point de la route
+
+match (p)-[r:Route]-(p2)-[*1..4]-(p3) where r.idOSM = 157688892
+return p,p2,p3
+
+
+
+MATCH p=shortestPath((p1)-[:Route*1..20]-(p2)) where id(p1)=40 and id(p2)=80
+RETURN p
+
+//distance avec un point d'un id
+
+MATCH (t:Point) where id(t)=1
+WITH point({longitude: t.long, latitude: t.lat}) AS trainPoint, point({longitude: -71.210784, latitude: 46.816388}) AS officePoint
+RETURN distance(trainPoint, officePoint) AS travelDistance
+
+MATCH (position:Point)
+WITH point({longitude: position.long, latitude: position.lat}) AS trainPoint, point({longitude: -71.210784, latitude: 46.816388}) AS officePoint, position
+with  distance(trainPoint, officePoint) as travel_distance,position ORDER BY travel_distance ASC where travel_distance<=500 return position,travel_distance limit 10

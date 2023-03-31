@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <link rel="stylesheet" href="./css/velo2.css">
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/themes/material.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/lang/de_DE.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/geodata/germanyLow.js"></script>
+<script src="https://cdn.amcharts.com/lib/4/fonts/notosans-sc.js"></script>
+ 
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="app">
+      <v-app>
+        <v-main >
+          <v-container>
+              <div class="minPadding">
+                  <div class="card">
+                  <p>
+                    Choisissez vos types de restaurants et partez à l'aventure 🚴💨
+                  </p>
+                  <v-text-field
+                  label="Distance"
+                  v-model="length"
+                  outlined
+                  dense
+                  suffix="m"
+                ></v-text-field>
+                  <v-text-field
+                  label="Nombre d'arrêts"
+                  v-model="numberOfStops"
+                  outlined
+                  dense
+                  append-icon="mdi-home-group"
+                ></v-text-field>
+                  <v-select
+                    v-model="selected"
+                    :items="types"
+                    label="Type de restaurant"
+                    multiple
+                    chips
+                    persistent-hint
+                  ></v-select>
+                      <v-card-actions class="justify-center">
+                      <v-btn 
+                      elevation="2"
+                      @click="getParcours"
+                        >Rechercher un parcours</v-btn>
+						
+                    <v-card-actions>
+                    </div>
+                  </div>
+                </v-container >
+                <v-card
+    class="mx-auto text-center"
+    dark
+  >
+    <v-card-text>
+      <v-sheet v-if="showChart">
+        <div id="mychart" ></div>
+      </v-sheet>
+    </v-card-text>
+
+    <v-card-text>
+      <div class="text-h4 font-weight-thin">
+        Résumé des apports caloriques
+      </div>
+    </v-card-text>
+
+    <v-divider></v-divider>
+
+    <v-card-actions class="justify-center">
+      <v-btn 
+      block
+      text
+                  elevation="2"
+                  @click="getChartdata()"
+                  >Afficher les apports caloriques</v-btn>
+    </v-card-actions>
+  </v-card>
+ 
+          </v-main>
+
+     
+       
+        
+	
+  </v-app>
+
+   
+    </div>
+    <div id="map" style="height:400px;"></div>
+      
+
+    <script type="module" src="./js/app.js"></script>
+    <script>
+        mapboxgl.accessToken =
+          "pk.eyJ1IjoiaHlwbm9ib3kyMDAwIiwiYSI6ImNqOTZ0d3M5ZTAwMDQycG85bG94cmQ4bHoifQ.4wDItiOHjqct_gJaziF4fA";
+        var map = new mapboxgl.Map({
+          container: "map",
+          style: "mapbox://styles/mapbox/streets-v10"
+        });
+      </script>
+  </body>
+ 
+</html>

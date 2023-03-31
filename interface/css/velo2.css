@@ -1,0 +1,169 @@
+#app {
+  background-image: linear-gradient(
+    109.6deg,
+    rgba(238, 58, 136, 1) 11.2%,
+    rgba(128, 162, 245, 1) 91.1%
+  );
+
+  color: #d8d8d8;
+}
+
+#card {
+  margin: auto;
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(9.3px);
+  -webkit-backdrop-filter: blur(9.3px);
+  max-width: 500px;
+}
+
+#mychart {
+  margin: auto;
+  max-width: 500px;
+}
+
+#minPadding {
+  padding: 10px;
+}
+
+
+
+.sidebar {
+  position: absolute;
+  width: 33.3333%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  border-right: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.map {
+  position: absolute;
+  left: 33.3333%;
+  width: 66.6666%;
+  top: 0;
+  bottom: 0;
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0;
+  font-weight: 400;
+  line-height: 20px;
+  padding: 20px 2px;
+}
+
+a {
+  color: #404040;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #101010;
+}
+
+.heading {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  min-height: 60px;
+  line-height: 60px;
+  padding: 0 10px;
+  background-color: #00853e;
+  color: #fff;
+}
+
+.listings {
+  height: 100%;
+  overflow: auto;
+  padding-bottom: 60px;
+}
+
+.listings .item {
+  display: block;
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  text-decoration: none;
+}
+
+.listings .item:last-child {
+  border-bottom: none;
+}
+.listings .item .title {
+  display: block;
+  color: #450085;
+  font-weight: 700;
+}
+
+.listings .item .title small {
+  font-weight: 400;
+}
+.listings .item.active .title,
+.listings .item .title:hover {
+  color: #6e3fc6;
+}
+.listings .item.active {
+  background-color: #f8f8f8;
+}
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+  border-left: 0;
+  background: rgba(0, 0, 0, 0.1);
+}
+::-webkit-scrollbar-track {
+  background: none;
+}
+::-webkit-scrollbar-thumb {
+  background: #474747;
+  border-radius: 0;
+}
+
+.marker {
+  width: 56px;
+  background-color: rgb(60, 0, 128);
+}
+
+/* Marker tweaks */
+.mapboxgl-popup {
+  padding-bottom: 50px;
+}
+
+.mapboxgl-popup-close-button {
+  display: none;
+}
+.mapboxgl-popup-content {
+  font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+  padding: 0;
+  width: 180px;
+}
+.mapboxgl-popup-content h3 {
+  background: #686868;
+  color: #fff;
+  margin: 0;
+  padding: 10px;
+  border-radius: 3px 3px 0 0;
+  font-weight: 700;
+  margin-top: -15px;
+}
+
+.mapboxgl-popup-content h4 {
+  margin: 0;
+  padding: 10px;
+  font-weight: 400;
+}
+
+.mapboxgl-popup-content div {
+  padding: 10px;
+}
+
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+  margin-top: 15px;
+}
+
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+  border-bottom-color: #6549c9;
+}
